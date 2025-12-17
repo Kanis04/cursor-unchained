@@ -1,0 +1,122 @@
+syntax = "proto3";
+
+package aiserver.v1;
+  
+message RefreshTabContextRequest {
+  CurrentFileInfo current_file = 1;
+  optional string model_name = 2;
+  optional LinterErrors linter_errors = 3;
+  repeated FileDiffHistory file_diff_histories = 4;
+  repeated AdditionalFile additional_files = 5;
+  optional double client_time = 6;
+  double time_since_request_start = 7;
+  double time_at_request_send = 8;
+  optional bool is_debug = 9;
+  optional string workspace_id = 10;
+  optional bool supports_cpt = 11;
+  optional bool supports_crlf_cpt = 12;
+  RepositoryInfo repository_info = 13;
+}
+
+message CurrentFileInfo {
+  string relative_workspace_path = 1;
+  string contents = 2;
+  CursorPosition cursor_position = 3;
+  repeated DataFrame dataframes = 4;
+  string language_id = 5;
+  Selection selection = 6;
+  repeated Diagnostic diagnostics = 7;
+  int32 total_number_of_lines = 8;
+  int32 contents_start_at_line = 9;
+  repeated TopChunk top_chunks = 10;
+  optional int32 alternative_version_id = 11;
+  optional int32 file_version = 14;
+  repeated int32 cell_start_lines = 15;
+  repeated Cell cells = 16;
+  optional string sha_256_hash = 17;
+  bool rely_on_filesync = 18;
+  string workspace_root_path = 19;
+  optional string line_ending = 20;
+}
+
+message LinterErrors {
+  string relative_workspace_path = 1;
+  repeated LinterError errors = 2;
+  string file_contents = 3;
+}
+
+message LinterError {
+  string message = 1;
+  Selection range = 2;
+  optional string source = 3;
+  repeated RelatedInformation related_information = 4;
+  optional Severity severity = 5;
+  optional bool is_stale = 6;
+}
+
+// Updated based on JSON structure
+message FileDiffHistory {
+  string file_name = 1;
+  repeated string diff_history = 2;
+  repeated double diff_history_timestamps = 3;
+}
+
+message AdditionalFile {
+  string relative_workspace_path = 1;
+  bool is_open = 2;
+  repeated string visible_range_content = 3;
+  optional double last_viewed_at = 4;
+  repeated int32 start_line_number_one_indexed = 5;
+  repeated LineRange visible_ranges = 6;
+}
+
+message RepositoryInfo {
+  string relative_workspace_path = 1;
+  repeated string remote_urls = 2;
+  repeated string remote_names = 3;
+  string repo_name = 4;
+  string repo_owner = 5;
+  bool is_tracked = 6;
+  bool is_local = 7;
+  optional int32 num_files = 8;
+  optional double orthogonal_transform_seed = 9;
+  optional EmbeddingModel preferred_embedding_model = 10;
+  string workspace_uri = 11;
+  optional DbProvider preferred_db_provider = 12;
+}
+
+message CursorPosition {
+  int32 line = 1;
+  int32 column = 2;
+}
+
+message LineRange {
+  int32 start_line_number = 1;
+  int32 end_line_number_inclusive = 2;
+}
+
+message RelatedInformation {
+  string message = 1;
+  string relative_workspace_path = 2;
+  repeated string relevant_lines = 3;
+  int32 start_line = 4;
+}
+
+enum EmbeddingModel {
+  EMBEDDING_MODEL_UNSPECIFIED = 0;
+}
+
+enum DbProvider {
+  DB_PROVIDER_UNSPECIFIED = 0;
+}
+
+enum Severity {
+  SEVERITY_UNSPECIFIED = 0;
+}
+
+// Placeholder messages
+message DataFrame {}
+message Selection {}
+message Diagnostic {}
+message TopChunk {}
+message Cell {}

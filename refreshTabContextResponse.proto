@@ -1,0 +1,45 @@
+syntax = "proto3";
+
+package aiserver.v1;
+ 
+
+message RefreshTabContextResponse {
+  repeated CodeResult code_results = 1;
+  
+  
+   
+}
+
+
+message CodeResult {
+  CodeBlock code_block = 1;
+  double score = 2;
+}
+
+message CodeBlock {
+  string relative_workspace_path = 1;
+  Range range = 2;
+  string contents = 3;
+  Signatures signatures = 4;
+  repeated DetailedLine detailed_lines = 5;
+}
+
+message Range {
+  Position start_position = 1;
+  Position end_position = 2;
+}
+
+message Position {
+  int32 line = 1;
+  int32 column = 2;
+}
+
+message Signatures {
+  repeated SignatureRange ranges = 1;
+}
+
+// Placeholder - actual structure unknown from JSON (was empty array)
+message SignatureRange {}
+
+// Placeholder - actual structure unknown from JSON (was empty array)
+message DetailedLine {}

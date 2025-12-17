@@ -1,0 +1,29 @@
+
+è
+refreshTabContextResponse.protoaiserver.v1"W
+RefreshTabContextResponse:
+code_results (2.aiserver.v1.CodeResultRcodeResults"Y
+
+CodeResult5
+
+code_block (2.aiserver.v1.CodeBlockR	codeBlock
+score (Rscore"Ñ
+	CodeBlock6
+relative_workspace_path (	RrelativeWorkspacePath(
+range (2.aiserver.v1.RangeRrange
+contents (	Rcontents7
+
+signatures (2.aiserver.v1.SignaturesR
+signatures@
+detailed_lines (2.aiserver.v1.DetailedLineRdetailedLines"
+Range<
+start_position (2.aiserver.v1.PositionRstartPosition8
+end_position (2.aiserver.v1.PositionRendPosition"6
+Position
+line (Rline
+column (Rcolumn"A
+
+Signatures3
+ranges (2.aiserver.v1.SignatureRangeRranges"
+SignatureRange"
+DetailedLinebproto3
