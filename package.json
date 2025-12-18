@@ -2,15 +2,21 @@
   "name": "proto2-grpc-test",
   "version": "1.0.0",
   "description": "gRPC test for RefreshTabContext service",
-  "main": "test.js",
+  "main": "dist/refreshTabContext.js",
   "scripts": {
-    "refreshTabContext": "bun run ./src/refreshTabContext.js",
-    "streamCpp": "bun run ./src/streamCpp.js"
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "refreshTabContext": "bun run ./src/refreshTabContext.ts",
+    "streamCpp": "bun run ./src/streamCpp.ts"
   },
   "dependencies": {
     "@grpc/grpc-js": "^1.9.0",
     "@grpc/proto-loader": "^0.7.10",
     "dotenv": "^17.2.3",
     "protobufjs": "^7.2.5"
+  },
+  "devDependencies": {
+    "@types/node": "^25.0.3",
+    "typescript": "^5.9.3"
   }
 }

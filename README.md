@@ -51,7 +51,7 @@ note: this is obviously a pain and quite brittle, I should find a better way to 
 
 2. The response will be logged to the console
 
-3. Edit payload.currentFile.contents to the code you want to tab complete
+3. Edit payload.currentFile.contents to the code you want to tab complete in the `src/constants.ts` file
 
 ## Environment Variables (RefreshTabContext)
 

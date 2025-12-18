@@ -1,81 +1,38 @@
-require("dotenv").config();
-const protobuf = require("protobufjs");
-const https = require("https");
+import dotenv from "dotenv";
+import protobuf from "protobufjs";
+import https from "node:https";
+import type { IncomingMessage } from "node:http";
+import type {
+  RefreshTabContextRequest,
+  ProtoType,
+  ProtoReader,
+  ManuallyDecodedResponse,
+  DecodedCodeResult,
+} from "./types/proto";
+import { defaultRefreshTabContextPayload } from "./constants";
 
-async function sendRequest() {
+dotenv.config();
+
+async function sendRequest(): Promise<void> {
   const requestRoot = await protobuf.load(
     "./protobuf/refreshTabContextRequest.proto"
   );
   const Request = requestRoot.lookupType(
     "aiserver.v1.RefreshTabContextRequest"
-  );
+  ) as unknown as ProtoType;
 
   const responseRoot = await protobuf.load(
     "./protobuf/refreshTabContextResponse.proto"
   );
   const Response = responseRoot.lookupType(
     "aiserver.v1.RefreshTabContextResponse"
-  );
+  ) as unknown as ProtoType;
 
-  const payload = {
-    currentFile: {
-      relativeWorkspacePath: "test.js",
-      contents: "hello world",
-      cursorPosition: {
-        line: 0,
-        column: 1,
-      },
-      dataframes: [],
-      languageId: "",
-      diagnostics: [],
-      totalNumberOfLines: 0,
-      contentsStartAtLine: 0,
-      topChunks: [],
-      fileVersion: 6,
-      cellStartLines: [],
-      cells: [],
-      relyOnFilesync: false,
-      workspaceRootPath: "/Users/somename/Desktop/test",
-      lineEnding: "\n",
-    },
-    fileDiffHistories: [
-      {
-        fileName: "test.js",
-        diffHistory: ["23-|\n23+|    \n"],
-        diffHistoryTimestamps: [],
-      },
-    ],
+  const payload: RefreshTabContextRequest = defaultRefreshTabContextPayload;
 
-    additionalFiles: [],
-    timeSinceRequestStart: 10,
-    timeAtRequestSend: Date.now(),
-    workspaceId: "",
-    supportsCpt: true,
-    supportsCrlfCpt: true,
-    clientTime: Date.now(),
-    repositoryInfo: {
-      //required to be a real value
-      repoName: process.env.REPO_NAME,
-      //required to be a real value
-      repoOwner: process.env.REPO_OWNER,
-      relativeWorkspacePath: ".",
-      workspaceUris: {
-        test: {
-          $mid: 1,
-          fsPath: "/Users/somename/Desktop/test",
-          external: "file:///Users/somename/Desktop/test",
-          path: "/Users/somename/Desktop/test",
-          scheme: "file",
-        },
-      },
-      orthogonalTransformSeed: 0,
-      preferredEmbeddingModel: 0,
-    },
-  };
+  const buffer = Buffer.from(Request.encode(Request.create(payload)).finish());
 
-  const buffer = Request.encode(Request.create(payload)).finish();
-
-  const options = {
+  const options: https.RequestOptions = {
     hostname: "api2.cursor.sh",
     path: "/aiserver.v1.AiService/RefreshTabContext",
     method: "POST",
@@ -86,12 +43,12 @@ async function sendRequest() {
     },
   };
 
-  const req = https.request(options, (res) => {
-    const chunks = [];
-    res.on("data", (chunk) => chunks.push(chunk));
+  const req = https.request(options, (res: IncomingMessage) => {
+    const chunks: Buffer[] = [];
+    res.on("data", (chunk: Buffer) => chunks.push(chunk));
     res.on("end", () => {
       const responseBuffer = Buffer.concat(chunks);
-      const contentType = res.headers["content-type"] || "";
+      const contentType = res.headers["content-type"] ?? "";
 
       console.log("Response status:", res.statusCode);
       console.log("Content-Type:", contentType);
@@ -104,12 +61,15 @@ async function sendRequest() {
         (responseBuffer.length > 0 && responseBuffer[0] === 0x7b) // Starts with '{'
       ) {
         try {
-          const jsonResponse = JSON.parse(responseBuffer.toString("utf8"));
+          const jsonResponse = JSON.parse(
+            responseBuffer.toString("utf8")
+          ) as unknown;
           console.log("JSON Response:");
           console.log(JSON.stringify(jsonResponse, null, 2));
           return;
         } catch (jsonError) {
-          console.warn("Failed to parse as JSON:", jsonError.message);
+          const error = jsonError as Error;
+          console.warn("Failed to parse as JSON:", error.message);
         }
       }
 
@@ -129,14 +89,16 @@ async function sendRequest() {
           console.log("Protobuf Response:");
           console.log(JSON.stringify(decoded, null, 2));
         } catch (error) {
-          console.error("Protobuf decode error:", error.message);
-          console.error("Error at offset:", error.offset || "unknown");
+          const protoError = error as Error & { offset?: number };
+          console.error("Protobuf decode error:", protoError.message);
+          console.error("Error at offset:", protoError.offset ?? "unknown");
 
           // Try to decode with a reader that skips unknown fields
           try {
-            const Reader = protobuf.Reader;
-            const reader = Reader.create(responseBuffer);
-            const decoded = {};
+            const reader = protobuf.Reader.create(
+              responseBuffer
+            ) as ProtoReader;
+            const decoded: ManuallyDecodedResponse = {};
 
             // Manually decode field by field, skipping unknown ones
             while (reader.pos < reader.len) {
@@ -149,7 +111,7 @@ async function sendRequest() {
                 if (!decoded.codeResults) decoded.codeResults = [];
                 const codeResultLen = reader.uint32();
                 const codeResultEnd = reader.pos + codeResultLen;
-                const codeResult = {};
+                const codeResult: DecodedCodeResult = {};
 
                 while (reader.pos < codeResultEnd) {
                   const crTag = reader.uint32();
@@ -160,7 +122,7 @@ async function sendRequest() {
                     // code_block
                     const cbLen = reader.uint32();
                     const cbEnd = reader.pos + cbLen;
-                    const codeBlock = {};
+                    const codeBlock: DecodedCodeResult["codeBlock"] = {};
 
                     while (reader.pos < cbEnd) {
                       const cbTag = reader.uint32();
@@ -174,7 +136,9 @@ async function sendRequest() {
                           // range - decode it properly
                           const rangeLen = reader.uint32();
                           const rangeEnd = reader.pos + rangeLen;
-                          const range = {};
+                          const range: NonNullable<
+                            DecodedCodeResult["codeBlock"]
+                          >["range"] = {};
                           while (reader.pos < rangeEnd) {
                             const rTag = reader.uint32();
                             const rFieldNo = rTag >>> 3;
@@ -183,7 +147,8 @@ async function sendRequest() {
                               // start_position
                               const posLen = reader.uint32();
                               const posEnd = reader.pos + posLen;
-                              const pos = {};
+                              const pos: { line?: number; column?: number } =
+                                {};
                               while (reader.pos < posEnd) {
                                 const pTag = reader.uint32();
                                 const pFieldNo = pTag >>> 3;
@@ -199,7 +164,8 @@ async function sendRequest() {
                               // end_position
                               const posLen = reader.uint32();
                               const posEnd = reader.pos + posLen;
-                              const pos = {};
+                              const pos: { line?: number; column?: number } =
+                                {};
                               while (reader.pos < posEnd) {
                                 const pTag = reader.uint32();
                                 const pFieldNo = pTag >>> 3;
@@ -222,7 +188,9 @@ async function sendRequest() {
                           // signatures - decode it properly
                           const sigLen = reader.uint32();
                           const sigEnd = reader.pos + sigLen;
-                          const signatures = { ranges: [] };
+                          const signatures: { ranges: object[] } = {
+                            ranges: [],
+                          };
                           while (reader.pos < sigEnd) {
                             const sigTag = reader.uint32();
                             const sigFieldNo = sigTag >>> 3;
@@ -235,7 +203,6 @@ async function sendRequest() {
                               // Decode any fields in SignatureRange
                               while (reader.pos < srEnd) {
                                 const srTag = reader.uint32();
-                                const srFieldNo = srTag >>> 3;
                                 const srWireType = srTag & 0x7;
                                 // Skip unknown fields
                                 if (srWireType === 0) reader.uint32();
@@ -267,7 +234,6 @@ async function sendRequest() {
                           // Decode any fields in DetailedLine
                           while (reader.pos < dlItemEnd) {
                             const dlTag = reader.uint32();
-                            const dlFieldNo = dlTag >>> 3;
                             const dlWireType = dlTag & 0x7;
                             // Skip unknown fields (DetailedLine might have fields we don't know about)
                             if (dlWireType === 0) reader.uint32();
@@ -297,9 +263,10 @@ async function sendRequest() {
                           }
                         }
                       } catch (skipErr) {
+                        const innerError = skipErr as Error;
                         console.error(
                           `Error at cbFieldNo ${cbFieldNo}, wireType ${cbWireType}, pos ${reader.pos}:`,
-                          skipErr.message
+                          innerError.message
                         );
                         // Try to recover by skipping to next field
                         break;
@@ -324,7 +291,8 @@ async function sendRequest() {
             console.log("Partially decoded (skipping unknown fields):");
             console.log(JSON.stringify(decoded, null, 2));
           } catch (manualError) {
-            console.error("Manual decode also failed:", manualError.message);
+            const manualErr = manualError as Error;
+            console.error("Manual decode also failed:", manualErr.message);
 
             // Show first bytes for debugging
             if (responseBuffer.length > 0) {
@@ -344,16 +312,18 @@ async function sendRequest() {
         console.warn("Unknown Content-Type, attempting to detect format...");
         // Try JSON first (most common for errors)
         try {
-          const jsonResponse = JSON.parse(responseBuffer.toString("utf8"));
+          const jsonResponse = JSON.parse(
+            responseBuffer.toString("utf8")
+          ) as unknown;
           console.log("Detected JSON Response:");
           console.log(JSON.stringify(jsonResponse, null, 2));
-        } catch (e) {
+        } catch {
           // Then try protobuf
           try {
             const decoded = Response.decode(responseBuffer);
             console.log("Detected Protobuf Response:");
             console.log(JSON.stringify(decoded, null, 2));
-          } catch (e2) {
+          } catch {
             console.error("Could not decode as JSON or Protobuf");
             console.error("Raw response:", responseBuffer.toString("utf8"));
           }
