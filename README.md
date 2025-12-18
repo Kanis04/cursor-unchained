@@ -6,6 +6,15 @@ This project aims to reverse engineer [Cursor's Tab complete](https://cursor.com
 
 Cursor's Tab complete is known to be the best tab complete on the market, however it's limited to only being available in Cursor which itself is tied down by Vscode's long history of technical debt. Cursor is focused on fixing these problems but why don't we unshackle the beast and bring the best tab complete to all!
 
+Example Tab Completion
+
+![Example Tab Completion](/assets/streamCppExample.png)
+
+Example Refresh Tab Context [WIP]
+(Workspace paths are encoded)
+
+![Example Refresh Tab Context](/assets/refreshTabContextExample.png)
+
 ## Requirements
 
 - Cursor Account
