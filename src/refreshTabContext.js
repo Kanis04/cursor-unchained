@@ -3,12 +3,16 @@ const protobuf = require("protobufjs");
 const https = require("https");
 
 async function sendRequest() {
-  const requestRoot = await protobuf.load("refreshTabContextRequest.proto");
+  const requestRoot = await protobuf.load(
+    "./protobuf/refreshTabContextRequest.proto"
+  );
   const Request = requestRoot.lookupType(
     "aiserver.v1.RefreshTabContextRequest"
   );
 
-  const responseRoot = await protobuf.load("refreshTabContextResponse.proto");
+  const responseRoot = await protobuf.load(
+    "./protobuf/refreshTabContextResponse.proto"
+  );
   const Response = responseRoot.lookupType(
     "aiserver.v1.RefreshTabContextResponse"
   );

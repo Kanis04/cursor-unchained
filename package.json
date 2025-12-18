@@ -4,7 +4,8 @@
   "description": "gRPC test for RefreshTabContext service",
   "main": "test.js",
   "scripts": {
-    "test": "node test.js"
+    "refreshTabContext": "bun run ./src/refreshTabContext.js",
+    "streamCpp": "bun run ./src/streamCpp.js"
   },
   "dependencies": {
     "@grpc/grpc-js": "^1.9.0",

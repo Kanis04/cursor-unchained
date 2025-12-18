@@ -1,0 +1,42 @@
+syntax = "proto3";
+
+package aiserver.v1;
+
+message StreamCppResponse {
+  string text = 1;
+  optional int32 suggestion_start_line = 2;
+  optional int32 suggestion_confidence = 3;
+  optional bool done_stream = 4;
+  optional string debug_model_output = 5;
+  optional string debug_model_input = 6;
+  optional string debug_stream_time = 7;
+  optional string debug_total_time = 8;
+  optional string debug_ttft_time = 9;
+  optional string debug_server_timing = 10;
+  optional RangeToReplace range_to_replace = 11;
+  optional CursorPredictionTarget cursor_prediction_target = 12;
+  optional bool done_edit = 13;
+  optional ModelInfo model_info = 14;
+  optional bool begin_edit = 15;
+  optional bool should_remove_leading_eol = 16;
+  optional string binding_id = 17;
+}
+
+message RangeToReplace {
+  int32 start_line = 1;
+  int32 start_column = 2;
+  int32 end_line = 3;
+  int32 end_column = 4;
+}
+
+message CursorPredictionTarget {
+  string relative_path = 1;
+  int32 line_number_one_indexed = 2;
+  string expected_content = 3;
+  bool should_retrigger_cpp = 4;
+}
+
+message ModelInfo {
+  bool is_fused_cursor_prediction_model = 1;
+  bool is_multidiff_model = 2;
+}
