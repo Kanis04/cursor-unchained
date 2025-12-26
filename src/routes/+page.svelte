@@ -9,9 +9,9 @@
     $state(undefined);
   let monaco: typeof Monaco;
   let editorContainer: HTMLDivElement | null = $state(null);
-  let jsCode = $state("console.log('Hello from Monaco! (the editor')");
+  let jsCode = $state("console.log('Hello from Monaco! (the editor");
   let jsTransparentCode = $state(
-    "console.log('Hello from Monaco! (the editor, not the city...)'"
+    "console.log('Hello from Monaco! (the editor, not the city...)');"
   );
   let transparentEditorContainer: HTMLDivElement | null = $state(null);
   let transparentEditor: Monaco.editor.IStandaloneCodeEditor | undefined =
@@ -41,6 +41,32 @@
       // Add keydown event listener
       const keyDownDisposable = editor.onKeyDown((e) => {
         console.log("Key pressed:", e.keyCode, e.browserEvent.key);
+
+        // Temporarily disable tabbing - prevent default tab insertion
+        if (e.browserEvent.key === "Tab" || e.keyCode === 2) {
+          e.browserEvent.preventDefault();
+          e.browserEvent.stopPropagation();
+        }
+
+        //if tab update code
+        if (e.keyCode === 2) {
+          console.log("Tab pressed");
+          editor?.getModel()?.setValue(jsTransparentCode);
+          //go to end of current line
+          if (editor) {
+            const position = editor.getPosition();
+            if (position) {
+              const model = editor.getModel();
+              if (model) {
+                const lineLength = model.getLineLength(position.lineNumber);
+                editor.setPosition({
+                  lineNumber: position.lineNumber,
+                  column: lineLength + 1,
+                });
+              }
+            }
+          }
+        }
         // Add your keydown handling logic here
       });
       // Add click/mouse event listeners
@@ -88,7 +114,7 @@
           .then((response) => response.text())
           .then((data) => {
             testContent = data;
-            editor?.getModel()?.setValue(data);
+            editor?.getModel()?.setValue(jsTransparentCode);
           });
       }}>Test Button</button
     >
