@@ -18,27 +18,6 @@
     $state(undefined);
   let eventDisposables: any[] = [];
 
-  function updateCodeCompletion(currentCode: string) {
-    fetch("/api/streamCpp", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        code: currentCode,
-      }),
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        const code = data.text;
-        console.log("Stream Cpp:", code);
-
-        if (transparentEditor) {
-          transparentEditor.getModel()?.setValue(code);
-        }
-      });
-  }
-
   onMount(async () => {
     monaco = (await import("./monaco")).default;
     if (editorContainer) {
@@ -59,14 +38,36 @@
       if (transparentEditor) {
         transparentEditor.setModel(transparentModel);
       }
+
+      // Define updateCodeCompletion function inside onMount for proper scoping
+      function updateCodeCompletion() {
+        const currentCode = editor?.getModel()?.getValue() ?? "";
+        console.log("Current Code:", currentCode);
+        fetch("/api/streamCpp", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            code: currentCode,
+          }),
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            const code = data.text;
+            console.log("Stream Cpp:", code);
+
+            if (transparentEditor) {
+              transparentEditor.getModel()?.setValue(code);
+            }
+          });
+      }
+
       // Add keydown event listener
       const keyDownDisposable = editor.onKeyDown((e) => {
         console.log("Key pressed:", e.keyCode, e.browserEvent.key);
 
-        const currentCode = editor?.getModel()?.getValue() ?? "";
-        console.log("Current Code:", currentCode);
-
-        updateCodeCompletion(currentCode);
+        updateCodeCompletion();
 
         // Temporarily disable tabbing - prevent default tab insertion
         if (e.browserEvent.key === "Tab" || e.keyCode === 2) {
@@ -97,16 +98,13 @@
       // Add click/mouse event listeners
       const mouseDownDisposable = editor.onMouseDown((e) => {
         console.log("Mouse clicked:", e.target.position);
-        // Add your click handling logic here
-        updateCodeCompletion(editor?.getModel()?.getValue() ?? "");
+        updateCodeCompletion();
       });
 
       const mouseUpDisposable = editor.onMouseUp((e) => {
         console.log("Mouse released:", e.target.position);
-        // Add your click handling logic here
       });
 
-      // Store disposables for cleanup
       eventDisposables = [
         keyDownDisposable,
         mouseDownDisposable,
