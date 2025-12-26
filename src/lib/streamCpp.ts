@@ -14,7 +14,9 @@ import {
   X_SESSION_ID,
 } from "$env/static/private";
 
-async function sendStreamCppRequest(): Promise<string> {
+async function sendStreamCppRequest(
+  code: string = "function"
+): Promise<string> {
   const token = CURSOR_BEARER_TOKEN;
   if (!token || token === "undefined") {
     console.error(
@@ -23,6 +25,10 @@ async function sendStreamCppRequest(): Promise<string> {
     process.exit(1);
   }
 
+  const newPayload = { ...defaultStreamCppPayload };
+  newPayload.currentFile.contents = code;
+
+  console.log("New Code:", code);
   const requestRoot = await protobuf.load("./protobuf/streamCppRequest.proto");
   const Request = requestRoot.lookupType(
     "aiserver.v1.StreamCppRequest"
@@ -35,7 +41,7 @@ async function sendStreamCppRequest(): Promise<string> {
     "aiserver.v1.StreamCppResponse"
   ) as unknown as ProtoType;
 
-  const payload: StreamCppRequest = defaultStreamCppPayload;
+  const payload: StreamCppRequest = newPayload;
 
   const protoBuffer = Buffer.from(
     Request.encode(Request.create(payload)).finish()

@@ -11,6 +11,14 @@ const app = new Elysia({ prefix: "/api" })
       },
     });
   })
+  .post("/streamCpp", async ({ body }) => {
+    const code = (body as { code: string }).code;
+    console.log("Code:", code);
+    const streamCpp = await sendStreamCppRequest(code);
+    return new Response(streamCpp, {
+      headers: { "Content-Type": "application/json" },
+    });
+  })
   .get("/streamCpp", async () => {
     const streamCpp = await sendStreamCppRequest();
     return new Response(streamCpp, {

@@ -11,7 +11,7 @@
   let editorContainer: HTMLDivElement | null = $state(null);
   let jsCode = $state("console.log('Hello from Monaco! (the editor");
   let jsTransparentCode = $state(
-    "console.log('Hello from Monaco! (the editor, not the city...)');"
+    "console.log('Hello from Monaco! (the editor');"
   );
   let transparentEditorContainer: HTMLDivElement | null = $state(null);
   let transparentEditor: Monaco.editor.IStandaloneCodeEditor | undefined =
@@ -41,6 +41,28 @@
       // Add keydown event listener
       const keyDownDisposable = editor.onKeyDown((e) => {
         console.log("Key pressed:", e.keyCode, e.browserEvent.key);
+
+        const currentCode = editor?.getModel()?.getValue() ?? "";
+        console.log("Current Code:", currentCode);
+
+        fetch("/api/streamCpp", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            code: currentCode,
+          }),
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            const code = data.text;
+            console.log("Stream Cpp:", code);
+
+            if (transparentEditor) {
+              transparentEditor.getModel()?.setValue(code);
+            }
+          });
 
         // Temporarily disable tabbing - prevent default tab insertion
         if (e.browserEvent.key === "Tab" || e.keyCode === 2) {
@@ -136,14 +158,14 @@
     </div>
     <div
       id="content"
-      class="w-full max-w-4xl mt-4 flex justify-center items-center relative"
+      class="w-full max-w-[90rem] mt-4 flex justify-center items-center relative"
     >
       <div
-        class="w-[60rem] h-[600px] border-6 border-gray-700 rounded-md absolute top-0 left-0 z-20"
+        class="w-[90rem] h-[600px] border-6 border-gray-700 rounded-md top-0 left-0 z-20"
         bind:this={editorContainer}
       ></div>
       <div
-        class="w-[60rem] h-[600px] border-6 border-gray-700 rounded-md absolute top-0 left-0 z-10 opacity-50 z-[20] pointer-events-none"
+        class="w-[90rem] h-[600px] border-6 border-gray-700 rounded-md top-0 left-0 z-10 opacity-50 z-[20] pointer-events-none"
         bind:this={transparentEditorContainer}
       ></div>
     </div>
