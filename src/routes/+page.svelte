@@ -155,27 +155,6 @@
       class="w-auto h-46"
     />
 
-    <button
-      class="cursor-pointer bg-blue-500 text-white px-4 py-2 rounded-md"
-      onclick={() => {
-        fetch("/api/test")
-          .then((response) => response.text())
-          .then((data) => {
-            testContent = data;
-            editor?.getModel()?.setValue(jsTransparentCode);
-          });
-      }}>Test Button</button
-    >
-    <button
-      class="cursor-pointer bg-blue-500 text-white px-4 py-2 rounded-md"
-      onclick={() => {
-        fetch("/api/streamCpp")
-          .then((response) => response.text())
-          .then((data) => {
-            streamCppContent = data;
-          });
-      }}>Stream Cpp Button</button
-    >
     <div id="test-content">
       {testContent}
     </div>
@@ -184,14 +163,14 @@
     </div>
     <div
       id="content"
-      class="w-full max-w-[90rem] mt-4 flex justify-center items-center relative"
+      class="w-full max-w-[80rem] mt-4 flex justify-center items-center relative"
     >
       <div
-        class="w-[90rem] h-[600px] border-6 border-gray-700 rounded-md top-0 left-0 z-20"
+        class="w-[80rem] h-[600px] absolute border-6 border-gray-700 rounded-md top-0 left-0 z-20"
         bind:this={editorContainer}
       ></div>
       <div
-        class="w-[90rem] h-[600px] border-6 border-gray-700 rounded-md top-0 left-0 z-10 opacity-50 z-[20] pointer-events-none"
+        class="w-[80rem] h-[600px] absolute border-6 border-gray-700 rounded-md top-0 left-0 z-10 opacity-50 z-[20] pointer-events-none"
         bind:this={transparentEditorContainer}
       ></div>
     </div>
