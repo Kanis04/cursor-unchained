@@ -5,27 +5,56 @@
   let testContent = $state("");
   import type * as Monaco from "monaco-editor/esm/vs/editor/editor.api.js";
   let streamCppContent = $state("");
-  let editor: Monaco.editor.IStandaloneCodeEditor | null = $state(null);
+  let editor: Monaco.editor.IStandaloneCodeEditor | undefined =
+    $state(undefined);
   let monaco: typeof Monaco;
   let editorContainer: HTMLDivElement | null = $state(null);
   let jsCode = $state(
     "console.log('Hello from Monaco! (the editor, not the city...)')"
   );
 
+  let eventDisposables: any[] = [];
+
   onMount(async () => {
     monaco = (await import("./monaco")).default;
     if (editorContainer) {
-      const editor = monaco.editor.create(editorContainer, {
+      editor = monaco.editor.create(editorContainer, {
         theme: "vs-dark",
       });
       const model = monaco.editor.createModel(jsCode, "javascript");
       editor.setModel(model);
+
+      // Add keydown event listener
+      const keyDownDisposable = editor.onKeyDown((e) => {
+        console.log("Key pressed:", e.keyCode, e.browserEvent.key);
+        // Add your keydown handling logic here
+      });
+
+      // Add click/mouse event listeners
+      const mouseDownDisposable = editor.onMouseDown((e) => {
+        console.log("Mouse clicked:", e.target.position);
+        // Add your click handling logic here
+      });
+
+      const mouseUpDisposable = editor.onMouseUp((e) => {
+        console.log("Mouse released:", e.target.position);
+        // Add your click handling logic here
+      });
+
+      // Store disposables for cleanup
+      eventDisposables = [
+        keyDownDisposable,
+        mouseDownDisposable,
+        mouseUpDisposable,
+      ];
     }
   });
 
   onDestroy(() => {
+    // Dispose event listeners
+    eventDisposables.forEach((disposable) => disposable.dispose());
     monaco?.editor.getModels().forEach((model: any) => model.dispose());
-    (editor as any)?.dispose();
+    editor?.dispose();
   });
 </script>
 
@@ -46,6 +75,7 @@
           .then((response) => response.text())
           .then((data) => {
             testContent = data;
+            editor?.getModel()?.setValue(data);
           });
       }}>Test Button</button
     >
@@ -71,8 +101,8 @@
     >
       <div
         class="w-[80rem] h-[600px] border-6 border-gray-700 rounded-md"
-        bind:this={editorContainer as HTMLDivElement}
-      />
+        bind:this={editorContainer}
+      ></div>
     </div>
   </div>
 </div>
