@@ -18,6 +18,27 @@
     $state(undefined);
   let eventDisposables: any[] = [];
 
+  function updateCodeCompletion(currentCode: string) {
+    fetch("/api/streamCpp", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        code: currentCode,
+      }),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        const code = data.text;
+        console.log("Stream Cpp:", code);
+
+        if (transparentEditor) {
+          transparentEditor.getModel()?.setValue(code);
+        }
+      });
+  }
+
   onMount(async () => {
     monaco = (await import("./monaco")).default;
     if (editorContainer) {
@@ -45,24 +66,7 @@
         const currentCode = editor?.getModel()?.getValue() ?? "";
         console.log("Current Code:", currentCode);
 
-        fetch("/api/streamCpp", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            code: currentCode,
-          }),
-        })
-          .then((response) => response.json())
-          .then((data) => {
-            const code = data.text;
-            console.log("Stream Cpp:", code);
-
-            if (transparentEditor) {
-              transparentEditor.getModel()?.setValue(code);
-            }
-          });
+        updateCodeCompletion(currentCode);
 
         // Temporarily disable tabbing - prevent default tab insertion
         if (e.browserEvent.key === "Tab" || e.keyCode === 2) {
@@ -72,20 +76,19 @@
 
         //if tab update code
         if (e.keyCode === 2) {
-          console.log("Tab pressed");
-          editor?.getModel()?.setValue(jsTransparentCode);
+          const transparentCode =
+            transparentEditor?.getModel()?.getValue() ?? "";
+          editor?.getModel()?.setValue(transparentCode);
           //go to end of current line
           if (editor) {
-            const position = editor.getPosition();
-            if (position) {
-              const model = editor.getModel();
-              if (model) {
-                const lineLength = model.getLineLength(position.lineNumber);
-                editor.setPosition({
-                  lineNumber: position.lineNumber,
-                  column: lineLength + 1,
-                });
-              }
+            const editorModel = editor.getModel();
+            if (editorModel) {
+              const lineCount = editorModel.getLineCount();
+              const lastLineLength = editorModel.getLineLength(lineCount);
+              editor.setPosition({
+                lineNumber: lineCount,
+                column: lastLineLength + 1,
+              });
             }
           }
         }
@@ -95,6 +98,7 @@
       const mouseDownDisposable = editor.onMouseDown((e) => {
         console.log("Mouse clicked:", e.target.position);
         // Add your click handling logic here
+        updateCodeCompletion(editor?.getModel()?.getValue() ?? "");
       });
 
       const mouseUpDisposable = editor.onMouseUp((e) => {
