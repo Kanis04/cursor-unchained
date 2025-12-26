@@ -1,65 +1,38 @@
-# Cursor Unchained
+# sv
 
-![Cursor Unchained Logo](/assets/cursor-unchained.png)
+Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
 
-This project aims to reverse engineer [Cursor's Tab complete](https://cursor.com/docs/tab/overview) to enable it to be used in other IDEs.
+## Creating a project
 
-Cursor's Tab complete is known to be the best tab complete on the market, however it's limited to only being available in Cursor which itself is tied down by Vscode's long history of technical debt. Cursor is focused on fixing these problems but why don't we unshackle the beast and bring the best tab complete to all!
+If you're seeing this, you've probably already done this step. Congrats!
 
-Example Tab Completion
+```sh
+# create a new project in the current directory
+npx sv create
 
-![Example Tab Completion](/assets/streamCppExample.png)
+# create a new project in my-app
+npx sv create my-app
+```
 
-Example Refresh Tab Context [WIP]
-(Workspace paths are encoded)
+## Developing
 
-![Example Refresh Tab Context](/assets/refreshTabContextExample.png)
+Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
 
-## Requirements
+```sh
+npm run dev
 
-- Cursor Account
+# or start the server and open the app in a new browser tab
+npm run dev -- --open
+```
 
-## Overview
+## Building
 
-**StreamCpp**: the main completion service that is used to send tab completion requests to the Cursor API.
+To create a production version of your app:
 
-**RefreshTabContext**: a context refresh service that is used to refresh the tab context which I believe is used to provide StreamCpp with more context for the tab completion request via codeblocks.
+```sh
+npm run build
+```
 
-## Environment Variables (StreamCpp)
+You can preview the production build with `npm run preview`.
 
-note: this is obviously a pain and quite brittle, I should find a better way to do this in the future.
-
-1. Create a new file called `.env` in the root of the project
-
-2. Open Cursor
-
-3. Cmd + Shift + P to open the Command Palette
-
-4. Developer: Open Developer Tools for Extension Host > LocalProcess pid: <pid>
-
-5. Navigate to the Network tab
-
-6. Trigger the tab completion request: in the Network tab this will appear as StreamCpp
-
-7. Copy the bearer token, x-request-id, x-session-id and x-cursor-client-version
-
-8. Copy the values and paste them into the `.env` file
-
-## Usage (StreamCpp)
-
-1. Run `bun run streamCpp` to send a tab completion request
-
-2. The response will be logged to the console
-
-3. Edit payload.currentFile.contents to the code you want to tab complete in the `src/constants.ts` file
-
-## Environment Variables (RefreshTabContext)
-
-This requires looking through and debugging the source code via Help Tab > Toggle Developer Tools.
-It's kind of a pain so I'll add it later.
-
-## Usage (RefreshTabContext)
-
-1. Run `bun run refreshTabContext` to send a refresh tab context request
-
-2. The response will be logged to the console
+> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.

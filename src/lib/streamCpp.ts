@@ -1,4 +1,3 @@
-import dotenv from "dotenv";
 import protobuf from "protobufjs";
 import https from "node:https";
 import type { IncomingMessage } from "node:http";
@@ -8,11 +7,15 @@ import type {
   ProtoType,
 } from "./types/proto";
 import { defaultStreamCppPayload } from "./constants";
-
-dotenv.config();
+import {
+  CURSOR_BEARER_TOKEN,
+  X_CURSOR_CLIENT_VERSION,
+  X_REQUEST_ID,
+  X_SESSION_ID,
+} from "$env/static/private";
 
 async function sendStreamCppRequest(): Promise<string> {
-  const token = process.env.CURSOR_BEARER_TOKEN;
+  const token = CURSOR_BEARER_TOKEN;
   if (!token || token === "undefined") {
     console.error(
       "Missing CURSOR_BEARER_TOKEN. dotenv loaded 0 vars; set it in your shell or .env."
@@ -58,10 +61,10 @@ async function sendStreamCppRequest(): Promise<string> {
       "connect-protocol-version": "1",
       "content-type": "application/connect+proto",
       "x-cursor-client-type": "ide",
-      "x-cursor-client-version": process.env.X_CURSOR_CLIENT_VERSION ?? "",
+      "x-cursor-client-version": X_CURSOR_CLIENT_VERSION ?? "",
       "x-cursor-streaming": "true",
-      "x-request-id": process.env.X_REQUEST_ID ?? "",
-      "x-session-id": process.env.X_SESSION_ID ?? "",
+      "x-request-id": X_REQUEST_ID ?? "",
+      "x-session-id": X_SESSION_ID ?? "",
       Authorization: `Bearer ${token}`,
       "Content-Length": envelope.length,
     },
@@ -120,8 +123,14 @@ async function sendStreamCppRequest(): Promise<string> {
             if (decoded.model_info || decoded.modelInfo) {
               const modelInfo = decoded.model_info || decoded.modelInfo;
               result.modelInfo = {
-                isFusedCursorPredictionModel: modelInfo.is_fused_cursor_prediction_model ?? modelInfo.isFusedCursorPredictionModel ?? false,
-                isMultidiffModel: modelInfo.is_multidiff_model ?? modelInfo.isMultidiffModel ?? false,
+                isFusedCursorPredictionModel:
+                  modelInfo.is_fused_cursor_prediction_model ??
+                  modelInfo.isFusedCursorPredictionModel ??
+                  false,
+                isMultidiffModel:
+                  modelInfo.is_multidiff_model ??
+                  modelInfo.isMultidiffModel ??
+                  false,
               };
             }
             if (decoded.range_to_replace || decoded.rangeToReplace) {
@@ -136,18 +145,36 @@ async function sendStreamCppRequest(): Promise<string> {
             if (decoded.text) {
               result.text += decoded.text;
             }
-            if (decoded.done_edit !== undefined || decoded.doneEdit !== undefined) {
+            if (
+              decoded.done_edit !== undefined ||
+              decoded.doneEdit !== undefined
+            ) {
               result.doneEdit = decoded.done_edit ?? decoded.doneEdit ?? false;
             }
-            if (decoded.done_stream !== undefined || decoded.doneStream !== undefined) {
-              result.doneStream = decoded.done_stream ?? decoded.doneStream ?? false;
+            if (
+              decoded.done_stream !== undefined ||
+              decoded.doneStream !== undefined
+            ) {
+              result.doneStream =
+                decoded.done_stream ?? decoded.doneStream ?? false;
             }
-            if (decoded.debug_model_output || decoded.debugStreamTime || decoded.debug_model_input || decoded.debug_ttft_time ||
-                decoded.debugModelOutput || decoded.debugStreamTime || decoded.debugModelInput || decoded.debugTtftTime) {
+            if (
+              decoded.debug_model_output ||
+              decoded.debugStreamTime ||
+              decoded.debug_model_input ||
+              decoded.debug_ttft_time ||
+              decoded.debugModelOutput ||
+              decoded.debugStreamTime ||
+              decoded.debugModelInput ||
+              decoded.debugTtftTime
+            ) {
               result.debug = {
-                modelOutput: decoded.debug_model_output ?? decoded.debugModelOutput,
-                modelInput: decoded.debug_model_input ?? decoded.debugModelInput,
-                streamTime: decoded.debug_stream_time ?? decoded.debugStreamTime,
+                modelOutput:
+                  decoded.debug_model_output ?? decoded.debugModelOutput,
+                modelInput:
+                  decoded.debug_model_input ?? decoded.debugModelInput,
+                streamTime:
+                  decoded.debug_stream_time ?? decoded.debugStreamTime,
                 ttftTime: decoded.debug_ttft_time ?? decoded.debugTtftTime,
               };
             }
@@ -177,11 +204,19 @@ async function sendStreamCppRequest(): Promise<string> {
             try {
               const decoded = Response.decode(dataBuffer) as any;
               if (decoded.text) result.text += decoded.text;
-              if (decoded.done_edit !== undefined || decoded.doneEdit !== undefined) {
-                result.doneEdit = decoded.done_edit ?? decoded.doneEdit ?? false;
+              if (
+                decoded.done_edit !== undefined ||
+                decoded.doneEdit !== undefined
+              ) {
+                result.doneEdit =
+                  decoded.done_edit ?? decoded.doneEdit ?? false;
               }
-              if (decoded.done_stream !== undefined || decoded.doneStream !== undefined) {
-                result.doneStream = decoded.done_stream ?? decoded.doneStream ?? false;
+              if (
+                decoded.done_stream !== undefined ||
+                decoded.doneStream !== undefined
+              ) {
+                result.doneStream =
+                  decoded.done_stream ?? decoded.doneStream ?? false;
               }
             } catch {
               // Ignore decode errors for remaining buffer
@@ -199,14 +234,29 @@ async function sendStreamCppRequest(): Promise<string> {
           const jsonResult = JSON.stringify(result, null, 2);
           if (!jsonResult || jsonResult.trim().length === 0) {
             console.warn("JSON stringify returned empty, using fallback");
-            resolve(JSON.stringify({ error: "Empty response", status: res.statusCode }, null, 2));
+            resolve(
+              JSON.stringify(
+                { error: "Empty response", status: res.statusCode },
+                null,
+                2
+              )
+            );
           } else {
-            console.log("Resolving with JSON (length:", jsonResult.length + ")");
+            console.log(
+              "Resolving with JSON (length:",
+              jsonResult.length + ")"
+            );
             resolve(jsonResult);
           }
         } catch (stringifyError) {
           console.error("JSON stringify error:", stringifyError);
-          resolve(JSON.stringify({ error: "Failed to stringify result", raw: result }, null, 2));
+          resolve(
+            JSON.stringify(
+              { error: "Failed to stringify result", raw: result },
+              null,
+              2
+            )
+          );
         }
       });
 
@@ -214,10 +264,16 @@ async function sendStreamCppRequest(): Promise<string> {
         result.error = err.message;
         try {
           const jsonResult = JSON.stringify(result, null, 2);
-          console.log("Resolving with error JSON (length:", jsonResult.length + ")");
+          console.log(
+            "Resolving with error JSON (length:",
+            jsonResult.length + ")"
+          );
           resolve(jsonResult);
         } catch (stringifyError) {
-          console.error("JSON stringify error in error handler:", stringifyError);
+          console.error(
+            "JSON stringify error in error handler:",
+            stringifyError
+          );
           resolve(JSON.stringify({ error: err.message }, null, 2));
         }
       });

@@ -1,3 +1,3 @@
-import refreshTabContext from "../src/refreshTabContext";
+import refreshTabContext from "../src/lib/refreshTabContext";
 
 refreshTabContext();

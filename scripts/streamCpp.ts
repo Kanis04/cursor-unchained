@@ -1,3 +1,3 @@
-import streamCpp from "../src/streamCpp";
+import streamCpp from "../src/lib/streamCpp";
 
 streamCpp();
