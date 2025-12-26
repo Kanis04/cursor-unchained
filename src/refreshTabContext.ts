@@ -336,4 +336,4 @@ async function sendRequest(): Promise<void> {
   req.end();
 }
 
-sendRequest();
+export default sendRequest;

@@ -188,4 +188,4 @@ async function sendStreamCppRequest(): Promise<void> {
   req.end();
 }
 
-sendStreamCppRequest();
+export default sendStreamCppRequest;
