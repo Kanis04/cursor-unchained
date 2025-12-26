@@ -9,10 +9,13 @@
     $state(undefined);
   let monaco: typeof Monaco;
   let editorContainer: HTMLDivElement | null = $state(null);
-  let jsCode = $state(
-    "console.log('Hello from Monaco! (the editor, not the city...)')"
+  let jsCode = $state("console.log('Hello from Monaco! (the editor')");
+  let jsTransparentCode = $state(
+    "console.log('Hello from Monaco! (the editor, not the city...)'"
   );
-
+  let transparentEditorContainer: HTMLDivElement | null = $state(null);
+  let transparentEditor: Monaco.editor.IStandaloneCodeEditor | undefined =
+    $state(undefined);
   let eventDisposables: any[] = [];
 
   onMount(async () => {
@@ -21,15 +24,25 @@
       editor = monaco.editor.create(editorContainer, {
         theme: "vs-dark",
       });
+      if (transparentEditorContainer) {
+        transparentEditor = monaco.editor.create(transparentEditorContainer, {
+          theme: "vs-dark",
+        });
+      }
       const model = monaco.editor.createModel(jsCode, "javascript");
+      const transparentModel = monaco.editor.createModel(
+        jsTransparentCode,
+        "javascript"
+      );
       editor.setModel(model);
-
+      if (transparentEditor) {
+        transparentEditor.setModel(transparentModel);
+      }
       // Add keydown event listener
       const keyDownDisposable = editor.onKeyDown((e) => {
         console.log("Key pressed:", e.keyCode, e.browserEvent.key);
         // Add your keydown handling logic here
       });
-
       // Add click/mouse event listeners
       const mouseDownDisposable = editor.onMouseDown((e) => {
         console.log("Mouse clicked:", e.target.position);
@@ -97,11 +110,15 @@
     </div>
     <div
       id="content"
-      class="w-full max-w-4xl mt-4 flex justify-center items-center"
+      class="w-full max-w-4xl mt-4 flex justify-center items-center relative"
     >
       <div
-        class="w-[80rem] h-[600px] border-6 border-gray-700 rounded-md"
+        class="w-[60rem] h-[600px] border-6 border-gray-700 rounded-md absolute top-0 left-0 z-20"
         bind:this={editorContainer}
+      ></div>
+      <div
+        class="w-[60rem] h-[600px] border-6 border-gray-700 rounded-md absolute top-0 left-0 z-10 opacity-50 z-[20] pointer-events-none"
+        bind:this={transparentEditorContainer}
       ></div>
     </div>
   </div>
