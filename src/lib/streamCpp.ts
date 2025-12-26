@@ -12,7 +12,7 @@ import {
   X_CURSOR_CLIENT_VERSION,
   X_REQUEST_ID,
   X_SESSION_ID,
-} from "$env/static/private";
+} from "./env";
 
 async function sendStreamCppRequest(
   code: string = "function"

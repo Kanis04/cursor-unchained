@@ -9,11 +9,7 @@ import type {
   DecodedCodeResult,
 } from "./types/proto";
 import { defaultRefreshTabContextPayload } from "./constants";
-import {
-  CURSOR_BEARER_TOKEN,
-  X_REQUEST_ID,
-  X_SESSION_ID,
-} from "$env/static/private";
+import { CURSOR_BEARER_TOKEN, X_REQUEST_ID, X_SESSION_ID } from "./env";
 
 async function sendRequest(): Promise<void> {
   const requestRoot = await protobuf.load(
