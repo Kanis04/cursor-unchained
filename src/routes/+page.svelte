@@ -17,6 +17,7 @@
   let transparentEditor: Monaco.editor.IStandaloneCodeEditor | undefined =
     $state(undefined);
   let eventDisposables: any[] = [];
+  let debounceTimeout: ReturnType<typeof setTimeout> | null = null;
 
   onMount(async () => {
     monaco = (await import("./monaco")).default;
@@ -41,7 +42,8 @@
 
       // Define updateCodeCompletion function inside onMount for proper scoping
       function updateCodeCompletion() {
-        const currentCode = editor?.getModel()?.getValue() ?? "";
+        const currentCode =
+          editor?.getModel()?.getValue().replaceAll("\n", "\\n") ?? "";
         console.log("Current Code:", currentCode);
         fetch("/api/streamCpp", {
           method: "POST",
@@ -58,16 +60,33 @@
             console.log("Stream Cpp:", code);
 
             if (transparentEditor) {
-              transparentEditor.getModel()?.setValue(code);
+              transparentEditor
+                .getModel()
+                ?.setValue(code.replaceAll("\\n", "\n"));
             }
           });
+      }
+
+      // Rate limit mitigator - debounce API calls
+      const DEBOUNCE_DELAY = 500; // Wait 500ms after user stops typing
+
+      function debouncedUpdateCodeCompletion() {
+        // Clear any existing timeout
+        if (debounceTimeout !== null) {
+          clearTimeout(debounceTimeout);
+        }
+        // Set a new timeout
+        debounceTimeout = setTimeout(() => {
+          updateCodeCompletion();
+          debounceTimeout = null;
+        }, DEBOUNCE_DELAY);
       }
 
       // Add keydown event listener
       const keyDownDisposable = editor.onKeyDown((e) => {
         console.log("Key pressed:", e.keyCode, e.browserEvent.key);
 
-        updateCodeCompletion();
+        debouncedUpdateCodeCompletion();
 
         // Temporarily disable tabbing - prevent default tab insertion
         if (e.browserEvent.key === "Tab" || e.keyCode === 2) {
@@ -98,7 +117,7 @@
       // Add click/mouse event listeners
       const mouseDownDisposable = editor.onMouseDown((e) => {
         console.log("Mouse clicked:", e.target.position);
-        updateCodeCompletion();
+        debouncedUpdateCodeCompletion();
       });
 
       const mouseUpDisposable = editor.onMouseUp((e) => {
@@ -114,6 +133,11 @@
   });
 
   onDestroy(() => {
+    // Clear debounce timeout
+    if (debounceTimeout !== null) {
+      clearTimeout(debounceTimeout);
+      debounceTimeout = null;
+    }
     // Dispose event listeners
     eventDisposables.forEach((disposable) => disposable.dispose());
     monaco?.editor.getModels().forEach((model: any) => model.dispose());
