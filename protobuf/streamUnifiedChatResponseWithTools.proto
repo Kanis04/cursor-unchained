@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+package aiserver.v1;
+
+// Placeholder message types - replace with actual definitions
+message ClientSideToolV2Call {}
+message StreamUnifiedChatResponse {}
+message ConversationSummary {}
+message UserRules {}
+message StreamStart {}
+message TracingContext {}
+
+message StreamUnifiedChatResponseWithTools {
+  oneof response {
+    ClientSideToolV2Call client_side_tool_v2_call = 1;
+    StreamUnifiedChatResponse stream_unified_chat_response = 2;
+    ConversationSummary conversation_summary = 3;
+    UserRules user_rules = 4;
+    StreamStart stream_start = 5;
+  }
+
+  optional TracingContext tracing_context = 6;
+  string event_id = 7;
+}

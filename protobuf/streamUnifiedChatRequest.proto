@@ -1,0 +1,187 @@
+syntax = "proto3";
+
+package aiserver.v1;
+
+// External placeholder messages - replace with actual definitions
+message ConversationMessage {}
+message ConversationHeaderOnly {}
+message ExplicitContext {}
+message ModelDetails {}
+message LinterErrors {}
+message ExternalLink {}
+message FileDiffHistory {}
+message Quote {}
+message RankedContext {}
+message RepositoryInfo {}
+message RepoQueryAccess {}
+message EnvironmentInfo {}
+message ConversationSummary {}
+message McpTool {}
+message ProjectLayout {}
+message SubagentInfo {}
+message WorkspaceFolder {}
+message Range {}
+message CodeSearchResultItem {}
+message FileInfo {}
+message CurrentFile {}
+
+// Enum for supported tools (referenced but not fully defined in source)
+enum SupportedTool {
+  SUPPORTED_TOOL_UNSPECIFIED = 0;
+  // Add other tool types as needed
+}
+
+message StreamUnifiedChatRequest {
+  // Enums
+  enum UnifiedMode {
+    UNIFIED_MODE_UNSPECIFIED = 0;
+    UNIFIED_MODE_CHAT = 1;
+    UNIFIED_MODE_AGENT = 2;
+    UNIFIED_MODE_EDIT = 3;
+    UNIFIED_MODE_CUSTOM = 4;
+    UNIFIED_MODE_PLAN = 5;
+    UNIFIED_MODE_DEBUG = 6;
+  }
+
+  enum ThinkingLevel {
+    THINKING_LEVEL_UNSPECIFIED = 0;
+    THINKING_LEVEL_MEDIUM = 1;
+    THINKING_LEVEL_HIGH = 2;
+  }
+
+  // Nested messages
+  message RedDiff {
+    string relative_workspace_path = 1;
+    repeated Range red_ranges = 2;
+    repeated Range red_ranges_reversed = 3;
+    string start_hash = 4;
+    string end_hash = 5;
+  }
+
+  message RecentEdits {
+    message CodeBlockInfo {
+      string relative_workspace_path = 1;
+      optional string content_before = 2;
+      optional string content_after = 3;
+      optional string generation_uuid = 4;
+      optional int32 version = 5;
+    }
+
+    message FileInfo {
+      string relative_workspace_path = 1;
+      string content = 2;
+    }
+
+    repeated CodeBlockInfo code_block_info = 1;
+    repeated FileInfo final_file_values = 2;
+    optional string edits_belong_to_composer_generation_uuid = 3;
+  }
+
+  message CodeSearchResult {
+    repeated CodeSearchResultItem results = 1;
+    repeated FileInfo all_files = 2;
+  }
+
+  message FullFileCmdKOptions {
+    string file_path = 1;
+  }
+
+  message CurrentPlan {
+    string content = 1;
+    string name = 2;
+  }
+
+  // Fields
+  repeated ConversationMessage conversation = 1;
+  optional bool allow_long_file_scan = 2;
+  ExplicitContext explicit_context = 3;
+  optional bool can_handle_filenames_after_language_ids = 4;
+  ModelDetails model_details = 5;
+  LinterErrors linter_errors = 6;
+  repeated string documentation_identifiers = 7;
+  optional string use_web = 8;
+  repeated ExternalLink external_links = 9;
+  optional ConversationMessage project_context = 10;
+  repeated RedDiff diffs_for_compressing_files = 11;
+  optional bool compress_edits = 12;
+  optional bool should_cache = 13;
+  repeated LinterErrors multi_file_linter_errors = 14;
+  CurrentFile current_file = 15;
+  optional RecentEdits recent_edits = 16;
+  optional bool use_reference_composer_diff_prompt = 17;
+  repeated FileDiffHistory file_diff_histories = 18;
+  optional bool use_new_compression_scheme = 19;
+  repeated RankedContext additional_ranked_context = 20;
+  repeated Quote quotes = 21;
+  bool is_chat = 22;
+  string conversation_id = 23;
+  RepositoryInfo repository_info = 24;
+  bool repository_info_should_query_staging = 25;
+  EnvironmentInfo environment_info = 26;
+  bool is_agentic = 27;
+  optional ConversationSummary conversation_summary = 28;
+  repeated SupportedTool supported_tools = 29;
+  repeated ConversationHeaderOnly full_conversation_headers_only = 30;
+  bool enable_yolo_mode = 31;
+  string yolo_prompt = 32;
+  bool use_unified_chat_prompt = 33;
+  repeated McpTool mcp_tools = 34;
+  optional bool use_full_inputs_context = 35;
+  optional bool is_resume = 36;
+  optional bool allow_model_fallbacks = 37;
+  optional int32 number_of_times_shown_fallback_model_warning = 38;
+  bool repository_info_should_query_prod = 39;
+  optional string context_bank_session_id = 40;
+  optional int32 context_bank_version = 41;
+  optional CodeSearchResult uses_codebase_results = 42;
+  optional bytes context_bank_encryption_key = 43;
+  string repo_query_auth_token = 44;
+  bool is_headless = 45;
+  optional UnifiedMode unified_mode = 46;
+  repeated SupportedTool tools_requiring_accepted_return = 47;
+  optional bool should_disable_tools = 48;
+  optional ThinkingLevel thinking_level = 49;
+  optional bool should_use_chat_prompt = 50;
+  optional bool uses_rules = 51;
+  RepoQueryAccess query_only_repo_access = 52;
+  optional bool mode_uses_auto_apply = 53;
+  optional string unified_mode_name = 54;
+  optional string background_composer_id = 55;
+  optional bool use_generate_rules_prompt = 56;
+  optional bool edit_tool_supports_search_and_replace = 57;
+  repeated ProjectLayout project_layouts = 58;
+  optional string repository_name_if_unindexed = 59;
+  optional double indexing_progress = 60;
+  optional FullFileCmdKOptions full_file_cmd_k_options = 61;
+  optional string indexing_phase_if_unindexed = 62;
+  optional bool use_knowledge_base_prompt = 63;
+  optional int32 indexing_num_files_if_unindexed = 64;
+  optional bool supports_mermaid_diagrams = 65;
+  optional SubagentInfo subagent_info = 66;
+  bool supports_git_index = 67;
+  bool is_background_composer = 68;
+  bool force_is_not_dev = 69;
+  optional bool disable_edit_file_timeout = 70;
+  optional bool should_attach_linter_errors = 71;
+  string replying_to_request_id = 72;
+  optional bool should_speculatively_route_gpt5 = 73;
+  optional bool force_terminal_hanging_detection = 74;
+  optional bool force_summarization = 75;
+  optional bool is_quick_search_query = 76;
+  optional bool is_spec_mode = 77;
+  bool allow_server_side_semantic_search = 78;
+  optional bytes speculative_summarization_encryption_key = 79;
+  repeated WorkspaceFolder workspace_folders = 81;
+  optional bool does_readfile_support_images = 82;
+  optional bool sandboxing_support_enabled = 83;
+  optional string custom_planning_instructions = 84;
+  optional bool enable_terminal_file_persistence = 85;
+  optional string terminals_folder = 86;
+  optional string agent_notes_folder = 87;
+  optional string agent_tools_folder = 88;
+  optional CurrentPlan current_plan = 89;
+  optional bool has_mcp_descriptors = 90;
+  optional string best_of_n_group_id = 91;
+  optional bool try_use_best_of_n_promotion = 92;
+  optional string agent_transcripts_folder = 93;
+}

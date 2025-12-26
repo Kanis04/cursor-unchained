@@ -1,6 +1,6 @@
 # Cursor Unchained
 
-![Cursor Unchained Logo](/assets/cursor-unchained.png)
+![Cursor Unchained Logo](src/lib/assets/cursor-unchained.png)
 
 This project aims to reverse engineer [Cursor's Tab complete](https://cursor.com/docs/tab/overview) to enable it to be used in other IDEs.
 
@@ -8,9 +8,19 @@ Cursor's Tab complete is known to be the best tab complete on the market, howeve
 
 Example Tab Completion
 
+![Example Tab Completion](/assets/tabCompletionExample.png)
+
+Example Tab Completion API Response
+![Example StreamCpp API Response](/assets/tabCompletionApiResponse.png)
+
+### Scripts
+
+`bun run streamCpp`
+
 ![Example Tab Completion](/assets/streamCppExample.png)
 
-Example Refresh Tab Context [WIP]
+`bun run refreshTabContext` [WIP]
+
 (Workspace paths are encoded)
 
 ![Example Refresh Tab Context](/assets/refreshTabContextExample.png)
@@ -25,7 +35,15 @@ Example Refresh Tab Context [WIP]
 
 **RefreshTabContext**: a context refresh service that is used to refresh the tab context which I believe is used to provide StreamCpp with more context for the tab completion request via codeblocks.
 
-## Environment Variables (StreamCpp)
+## Setup
+
+1. Follow the below steps to get the environment variables for the StreamCpp/Tab Completion functionality
+
+2. bun install
+
+3. bun run dev
+
+### Environment Variables (StreamCpp)
 
 note: this is obviously a pain and quite brittle, I should find a better way to do this in the future.
 
@@ -45,21 +63,47 @@ note: this is obviously a pain and quite brittle, I should find a better way to 
 
 8. Copy the values and paste them into the `.env` file
 
-## Usage (StreamCpp)
+## Frontend
 
-1. Run `bun run streamCpp` to send a tab completion request
+1. `bun run dev` to start the development server
+
+2. Open the browser and navigate to `http://localhost:5173`
+
+3. Start typing in the editor and the tab completion will be shown in the transparent editor
+
+4. Press Tab to insert the tab completion into the editor
+
+## Backend
+
+1. `bun run dev` to start the development server
+
+2. Run the following command to send a tab completion request
+
+```bash
+curl --location 'http://localhost:5173/api/streamCpp' \
+--header 'Content-Type: application/json' \
+--data '{
+    "code":"function "
+}'
+```
+
+## Scripts
+
+### StreamCpp
+
+1. `bun run streamCpp` to send a tab completion request
 
 2. The response will be logged to the console
 
 3. Edit payload.currentFile.contents to the code you want to tab complete in the `src/constants.ts` file
 
-## Environment Variables (RefreshTabContext)
+### Environment Variables (RefreshTabContext)
 
 This requires looking through and debugging the source code via Help Tab > Toggle Developer Tools.
 It's kind of a pain so I'll add it later.
 
-## Usage (RefreshTabContext)
+### RefreshTabContext
 
-1. Run `bun run refreshTabContext` to send a refresh tab context request
+1. `bun run refreshTabContext` to send a refresh tab context request
 
 2. The response will be logged to the console

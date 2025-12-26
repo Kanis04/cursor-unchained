@@ -1,4 +1,3 @@
-import dotenv from "dotenv";
 import protobuf from "protobufjs";
 import https from "node:https";
 import type { IncomingMessage } from "node:http";
@@ -10,8 +9,11 @@ import type {
   DecodedCodeResult,
 } from "./types/proto";
 import { defaultRefreshTabContextPayload } from "./constants";
-
-dotenv.config();
+import {
+  CURSOR_BEARER_TOKEN,
+  X_REQUEST_ID,
+  X_SESSION_ID,
+} from "$env/static/private";
 
 async function sendRequest(): Promise<void> {
   const requestRoot = await protobuf.load(
@@ -38,8 +40,10 @@ async function sendRequest(): Promise<void> {
     method: "POST",
     headers: {
       "Content-Type": "application/proto",
-      Authorization: `Bearer ${process.env.CURSOR_BEARER_TOKEN}`,
+      Authorization: `Bearer ${CURSOR_BEARER_TOKEN}`,
       "Content-Length": buffer.length,
+      "x-request-id": X_REQUEST_ID ?? "",
+      "x-session-id": X_SESSION_ID ?? "",
     },
   };
 
@@ -336,4 +340,4 @@ async function sendRequest(): Promise<void> {
   req.end();
 }
 
-sendRequest();
+export default sendRequest;
