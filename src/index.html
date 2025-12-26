@@ -25,8 +25,13 @@
         <img src="/assets/cursor-unchained.png" alt="Cursor Unchained" class="w-auto h-46">
         <button class="cursor-pointer bg-blue-500 text-white px-4 py-2 rounded-md" hx-get="/test"
             hx-target="#test-content" hx-swap="innerHTML">Test Button</button>
+        <button class="cursor-pointer bg-blue-500 text-white px-4 py-2 rounded-md" hx-get="/streamCpp"
+            hx-target="#streamCpp-content" hx-swap="innerHTML">Stream Cpp Button</button>
         <div id="test-content">
             Test Content
+        </div>
+        <div id="streamCpp-content">
+            Stream Cpp Content
         </div>
         <div id="content" class="w-full max-w-4xl mt-4">
             <div id="editor" class="m-4"></div>

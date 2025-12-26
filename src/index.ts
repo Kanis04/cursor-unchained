@@ -1,6 +1,7 @@
 import { Elysia } from "elysia";
 import { staticPlugin } from "@elysiajs/static";
 import { watch } from "fs";
+import sendStreamCppRequest from "./streamCpp";
 
 const hotReloadScript = `
 <script>
@@ -20,6 +21,12 @@ const app = new Elysia()
     const injectedHtml = html.replace("</body>", `${hotReloadScript}</body>`);
     return new Response(injectedHtml, {
       headers: { "Content-Type": "text/html" },
+    });
+  })
+  .get("/streamCpp", async () => {
+    const streamCpp = await sendStreamCppRequest();
+    return new Response(streamCpp, {
+      headers: { "Content-Type": "application/json" },
     });
   })
   .get("/test", async () => {

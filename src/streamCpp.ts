@@ -11,7 +11,7 @@ import { defaultStreamCppPayload } from "./constants";
 
 dotenv.config();
 
-async function sendStreamCppRequest(): Promise<void> {
+async function sendStreamCppRequest(): Promise<string> {
   const token = process.env.CURSOR_BEARER_TOKEN;
   if (!token || token === "undefined") {
     console.error(
@@ -67,125 +67,171 @@ async function sendStreamCppRequest(): Promise<void> {
     },
   };
 
-  const req = https.request(options, (res: IncomingMessage) => {
-    let dataBuffer = Buffer.alloc(0);
+  return new Promise<string>((resolve, reject) => {
+    const req = https.request(options, (res: IncomingMessage) => {
+      let dataBuffer = Buffer.alloc(0);
 
-    // Collect all stream data
-    const result: StreamCppResult = {
-      status: res.statusCode,
-      contentType: res.headers["content-type"] ?? "",
-      modelInfo: null,
-      rangeToReplace: null,
-      text: "",
-      doneEdit: false,
-      doneStream: false,
-      debug: null,
-      trailer: null,
-      error: null,
-    };
+      // Collect all stream data
+      const result: StreamCppResult = {
+        status: res.statusCode,
+        contentType: res.headers["content-type"] ?? "",
+        modelInfo: null,
+        rangeToReplace: null,
+        text: "",
+        doneEdit: false,
+        doneStream: false,
+        debug: null,
+        trailer: null,
+        error: null,
+      };
 
-    res.on("data", (chunk: Buffer) => {
-      dataBuffer = Buffer.concat([dataBuffer, chunk]);
+      res.on("data", (chunk: Buffer) => {
+        dataBuffer = Buffer.concat([dataBuffer, chunk]);
 
-      // Parse Connect protocol envelopes: 1 byte flags + 4 bytes length + message
-      while (dataBuffer.length >= 5) {
-        const flags = dataBuffer.readUInt8(0);
-        const msgLen = dataBuffer.readUInt32BE(1);
+        // Parse Connect protocol envelopes: 1 byte flags + 4 bytes length + message
+        while (dataBuffer.length >= 5) {
+          const flags = dataBuffer.readUInt8(0);
+          const msgLen = dataBuffer.readUInt32BE(1);
 
-        // Check if we have the full message
-        if (dataBuffer.length < 5 + msgLen) {
-          break; // Wait for more data
-        }
-
-        const msgData = dataBuffer.slice(5, 5 + msgLen);
-        dataBuffer = dataBuffer.slice(5 + msgLen);
-
-        // flags & 0x02 means it's a trailer/end-stream frame (JSON)
-        if (flags & 0x02) {
-          try {
-            result.trailer = JSON.parse(msgData.toString("utf8")) as unknown;
-          } catch {
-            result.trailer = msgData.toString("utf8");
+          // Check if we have the full message
+          if (dataBuffer.length < 5 + msgLen) {
+            break; // Wait for more data
           }
-          continue;
+
+          const msgData = dataBuffer.slice(5, 5 + msgLen);
+          dataBuffer = dataBuffer.slice(5 + msgLen);
+
+          // flags & 0x02 means it's a trailer/end-stream frame (JSON)
+          if (flags & 0x02) {
+            try {
+              result.trailer = JSON.parse(msgData.toString("utf8")) as unknown;
+            } catch {
+              result.trailer = msgData.toString("utf8");
+            }
+            continue;
+          }
+
+          // Regular data frame - decode protobuf
+          try {
+            const decoded = Response.decode(msgData) as any;
+
+            // Protobuf fields are in snake_case, map them to camelCase
+            // Handle both snake_case (from proto) and camelCase (if protobufjs converts)
+            if (decoded.model_info || decoded.modelInfo) {
+              const modelInfo = decoded.model_info || decoded.modelInfo;
+              result.modelInfo = {
+                isFusedCursorPredictionModel: modelInfo.is_fused_cursor_prediction_model ?? modelInfo.isFusedCursorPredictionModel ?? false,
+                isMultidiffModel: modelInfo.is_multidiff_model ?? modelInfo.isMultidiffModel ?? false,
+              };
+            }
+            if (decoded.range_to_replace || decoded.rangeToReplace) {
+              const range = decoded.range_to_replace || decoded.rangeToReplace;
+              result.rangeToReplace = {
+                startLine: range.start_line ?? range.startLine ?? 0,
+                startColumn: range.start_column ?? range.startColumn ?? 0,
+                endLine: range.end_line ?? range.endLine ?? 0,
+                endColumn: range.end_column ?? range.endColumn ?? 0,
+              };
+            }
+            if (decoded.text) {
+              result.text += decoded.text;
+            }
+            if (decoded.done_edit !== undefined || decoded.doneEdit !== undefined) {
+              result.doneEdit = decoded.done_edit ?? decoded.doneEdit ?? false;
+            }
+            if (decoded.done_stream !== undefined || decoded.doneStream !== undefined) {
+              result.doneStream = decoded.done_stream ?? decoded.doneStream ?? false;
+            }
+            if (decoded.debug_model_output || decoded.debugStreamTime || decoded.debug_model_input || decoded.debug_ttft_time ||
+                decoded.debugModelOutput || decoded.debugStreamTime || decoded.debugModelInput || decoded.debugTtftTime) {
+              result.debug = {
+                modelOutput: decoded.debug_model_output ?? decoded.debugModelOutput,
+                modelInput: decoded.debug_model_input ?? decoded.debugModelInput,
+                streamTime: decoded.debug_stream_time ?? decoded.debugStreamTime,
+                ttftTime: decoded.debug_ttft_time ?? decoded.debugTtftTime,
+              };
+            }
+          } catch (e) {
+            const error = e as Error;
+            result.error = error.message;
+            console.error("Decode error:", error.message);
+          }
+        }
+      });
+
+      res.on("end", () => {
+        // Handle any remaining data as error response
+        if (dataBuffer.length > 0) {
+          const contentType = res.headers["content-type"] ?? "";
+          if (
+            contentType.includes("application/json") ||
+            dataBuffer[0] === 0x7b
+          ) {
+            try {
+              result.error = JSON.parse(dataBuffer.toString("utf8")) as unknown;
+            } catch {
+              result.error = dataBuffer.toString("utf8");
+            }
+          } else {
+            // Try to parse remaining buffer as protobuf
+            try {
+              const decoded = Response.decode(dataBuffer) as any;
+              if (decoded.text) result.text += decoded.text;
+              if (decoded.done_edit !== undefined || decoded.doneEdit !== undefined) {
+                result.doneEdit = decoded.done_edit ?? decoded.doneEdit ?? false;
+              }
+              if (decoded.done_stream !== undefined || decoded.doneStream !== undefined) {
+                result.doneStream = decoded.done_stream ?? decoded.doneStream ?? false;
+              }
+            } catch {
+              // Ignore decode errors for remaining buffer
+            }
+          }
         }
 
-        // Regular data frame - decode protobuf
+        // Check for error status codes
+        if (res.statusCode && res.statusCode >= 400) {
+          result.error = result.error || `HTTP ${res.statusCode}`;
+        }
+
+        // Return final JSON - always return something
         try {
-          const decoded = Response.decode(msgData) as {
-            modelInfo?: StreamCppResult["modelInfo"];
-            rangeToReplace?: StreamCppResult["rangeToReplace"];
-            text?: string;
-            doneEdit?: boolean;
-            doneStream?: boolean;
-            debugModelOutput?: string;
-            debugModelInput?: string;
-            debugStreamTime?: string;
-            debugTtftTime?: string;
-          };
-
-          if (decoded.modelInfo) {
-            result.modelInfo = decoded.modelInfo;
+          const jsonResult = JSON.stringify(result, null, 2);
+          if (!jsonResult || jsonResult.trim().length === 0) {
+            console.warn("JSON stringify returned empty, using fallback");
+            resolve(JSON.stringify({ error: "Empty response", status: res.statusCode }, null, 2));
+          } else {
+            console.log("Resolving with JSON (length:", jsonResult.length + ")");
+            resolve(jsonResult);
           }
-          if (decoded.rangeToReplace) {
-            result.rangeToReplace = decoded.rangeToReplace;
-          }
-          if (decoded.text) {
-            result.text += decoded.text;
-          }
-          if (decoded.doneEdit) {
-            result.doneEdit = true;
-          }
-          if (decoded.doneStream) {
-            result.doneStream = true;
-          }
-          if (decoded.debugModelOutput || decoded.debugStreamTime) {
-            result.debug = {
-              modelOutput: decoded.debugModelOutput,
-              modelInput: decoded.debugModelInput,
-              streamTime: decoded.debugStreamTime,
-              ttftTime: decoded.debugTtftTime,
-            };
-          }
-        } catch (e) {
-          const error = e as Error;
-          result.error = error.message;
+        } catch (stringifyError) {
+          console.error("JSON stringify error:", stringifyError);
+          resolve(JSON.stringify({ error: "Failed to stringify result", raw: result }, null, 2));
         }
-      }
-    });
+      });
 
-    res.on("end", () => {
-      // Handle any remaining data as error response
-      if (dataBuffer.length > 0) {
-        const contentType = res.headers["content-type"] ?? "";
-        if (
-          contentType.includes("application/json") ||
-          dataBuffer[0] === 0x7b
-        ) {
-          try {
-            result.error = JSON.parse(dataBuffer.toString("utf8")) as unknown;
-          } catch {
-            result.error = dataBuffer.toString("utf8");
-          }
+      res.on("error", (err: Error) => {
+        result.error = err.message;
+        try {
+          const jsonResult = JSON.stringify(result, null, 2);
+          console.log("Resolving with error JSON (length:", jsonResult.length + ")");
+          resolve(jsonResult);
+        } catch (stringifyError) {
+          console.error("JSON stringify error in error handler:", stringifyError);
+          resolve(JSON.stringify({ error: err.message }, null, 2));
         }
-      }
-
-      // Output final JSON
-      console.log(JSON.stringify(result, null, 2));
+      });
     });
 
-    res.on("error", (err: Error) => {
-      result.error = err.message;
-      console.log(JSON.stringify(result, null, 2));
+    req.on("error", (err: Error) => {
+      console.error("Request error:", err.message);
+      const errorResult = JSON.stringify({ error: err.message }, null, 2);
+      reject(new Error(errorResult));
     });
-  });
 
-  req.on("error", (err: Error) => {
-    console.error("Request error:", err.message);
+    req.write(envelope);
+    req.end();
   });
-
-  req.write(envelope);
-  req.end();
 }
 
 export default sendStreamCppRequest;
