@@ -24,10 +24,12 @@
     if (editorContainer) {
       editor = monaco.editor.create(editorContainer, {
         theme: "vs-dark",
+        fontSize: 20,
       });
       if (transparentEditorContainer) {
         transparentEditor = monaco.editor.create(transparentEditorContainer, {
           theme: "vs-dark",
+          fontSize: 20,
         });
       }
       const model = monaco.editor.createModel(jsCode, "javascript");
@@ -40,7 +42,6 @@
         transparentEditor.setModel(transparentModel);
       }
 
-      // Define updateCodeCompletion function inside onMount for proper scoping
       function updateCodeCompletion() {
         const currentCode =
           editor?.getModel()?.getValue().replaceAll("\n", "\\n") ?? "";
@@ -67,39 +68,31 @@
           });
       }
 
-      // Rate limit mitigator - debounce API calls
-      const DEBOUNCE_DELAY = 500; // Wait 500ms after user stops typing
+      const DEBOUNCE_DELAY = 500;
 
       function debouncedUpdateCodeCompletion() {
-        // Clear any existing timeout
         if (debounceTimeout !== null) {
           clearTimeout(debounceTimeout);
         }
-        // Set a new timeout
         debounceTimeout = setTimeout(() => {
           updateCodeCompletion();
           debounceTimeout = null;
         }, DEBOUNCE_DELAY);
       }
 
-      // Add keydown event listener
       const keyDownDisposable = editor.onKeyDown((e) => {
         console.log("Key pressed:", e.keyCode, e.browserEvent.key);
 
         debouncedUpdateCodeCompletion();
-
-        // Temporarily disable tabbing - prevent default tab insertion
         if (e.browserEvent.key === "Tab" || e.keyCode === 2) {
           e.browserEvent.preventDefault();
           e.browserEvent.stopPropagation();
         }
 
-        //if tab update code
         if (e.keyCode === 2) {
           const transparentCode =
             transparentEditor?.getModel()?.getValue() ?? "";
           editor?.getModel()?.setValue(transparentCode);
-          //go to end of current line
           if (editor) {
             const editorModel = editor.getModel();
             if (editorModel) {
@@ -112,9 +105,7 @@
             }
           }
         }
-        // Add your keydown handling logic here
       });
-      // Add click/mouse event listeners
       const mouseDownDisposable = editor.onMouseDown((e) => {
         console.log("Mouse clicked:", e.target.position);
         debouncedUpdateCodeCompletion();
@@ -133,12 +124,10 @@
   });
 
   onDestroy(() => {
-    // Clear debounce timeout
     if (debounceTimeout !== null) {
       clearTimeout(debounceTimeout);
       debounceTimeout = null;
     }
-    // Dispose event listeners
     eventDisposables.forEach((disposable) => disposable.dispose());
     monaco?.editor.getModels().forEach((model: any) => model.dispose());
     editor?.dispose();
@@ -152,7 +141,7 @@
     <enhanced:img
       src={cursorUnchained}
       alt="Cursor Unchained"
-      class="w-auto h-46"
+      class="w-auto h-36"
     />
 
     <div id="test-content">
