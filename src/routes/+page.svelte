@@ -155,11 +155,11 @@
       class="w-full max-w-[80rem] mt-4 flex justify-center items-center relative"
     >
       <div
-        class="w-[80rem] h-[600px] absolute border-6 border-gray-700 rounded-md top-0 left-0 z-20"
+        class="w-full max-w-[80rem] h-[600px] absolute border-6 border-gray-700 rounded-md top-0 left-0 z-20"
         bind:this={editorContainer}
       ></div>
       <div
-        class="w-[80rem] h-[600px] absolute border-6 border-gray-700 rounded-md top-0 left-0 z-10 opacity-50 z-[20] pointer-events-none"
+        class="w-full max-w-[80rem] h-[600px] absolute border-6 border-gray-700 rounded-md top-0 left-0 z-10 opacity-50 z-[20] pointer-events-none"
         bind:this={transparentEditorContainer}
       ></div>
     </div>
