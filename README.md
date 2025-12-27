@@ -47,7 +47,7 @@ Example Tab Completion API Response
 
 note: this is obviously a pain and quite brittle, I should find a better way to do this in the future.
 
-1. Create a new file called `.env` in the root of the project
+1. Create a new file called `.env` in the root of the project. See `env.example` for the required variables.
 
 2. Open Cursor
 
