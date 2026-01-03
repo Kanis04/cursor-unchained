@@ -63,6 +63,8 @@ note: this is obviously a pain and quite brittle, I should find a better way to 
 
 8. Copy the values and paste them into the `.env` file
 
+Note: you can run `npx jwt-decode-cli <token>` to decode your CURSOR_BEARER_TOKEN and get the payload with the expiration date (which I estimate to be 1 - 2 months — but could be longer depending on when the token was last refreshed)
+
 ## Frontend
 
 1. `bun run dev` to start the development server
